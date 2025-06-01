@@ -1,0 +1,63 @@
+/* src/App.css */
+.app-navbar {
+  background-color: var(--bg-surface);
+  padding: 12px 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border-color);
+  position: sticky;
+  top: 0;
+  z-index: 1000; /* High z-index for navbar */
+  height: 65px; /* Example fixed height */
+}
+
+.navbar-brand {
+  color: var(--text-color);
+  text-decoration: none;
+  font-size: 1.7em;
+  font-weight: 700;
+  font-family: 'Poppins', sans-serif; /* Or a specific brand font */
+}
+
+.navbar-links {
+  display: flex;
+  align-items: center;
+}
+
+.nav-link {
+  color: var(--text-muted-color);
+  text-decoration: none;
+  margin-left: 25px;
+  font-size: 1em;
+  font-weight: 500;
+  transition: color 0.2s ease;
+  padding: 8px 4px; /* Vertical padding for click area */
+}
+
+.nav-link:hover,
+.nav-link.active { /* For NavLink active state */
+  color: var(--primary-color);
+}
+
+.nav-link-button { /* For Logout button */
+  background: none;
+  border: none;
+  color: var(--text-muted-color);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 1em;
+  font-weight: 500;
+  margin-left: 25px;
+  padding: 8px 4px;
+  transition: color 0.2s ease;
+}
+.nav-link-button:hover {
+  color: var(--primary-color);
+}
+
+.main-app-content {
+  /* Padding for content below the navbar */
+  /* No top padding if HomePage handles it for full-height hero */
+  /* padding-top: 20px; */ 
+}

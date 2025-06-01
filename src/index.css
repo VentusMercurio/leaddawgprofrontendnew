@@ -1,0 +1,56 @@
+/* src/index.css */
+:root {
+  font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.6;
+  font-weight: 400;
+
+  color-scheme: dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #121212; /* Main dark background */
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  --primary-color: #0d6efd; /* Example: Bootstrap Blue */
+  --primary-hover-color: #0b5ed7;
+  --secondary-color: #6c757d;
+  --accent-color: #ffc107; /* Yellow */
+  --accent-hover-color: #e0a800;
+  --success-color: #198754;
+  --danger-color: #dc3545;
+  --text-color: rgba(255, 255, 255, 0.87);
+  --text-muted-color: rgba(255, 255, 255, 0.6);
+  --bg-surface: #1e1e1e; 
+  --bg-surface-2: #2a2a2e; /* Slightly lighter surface */
+  --border-color: #3a3a3e; 
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background-color: var(--bg-color, #121212); /* Use var for global bg */
+  color: var(--text-color);
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+a {
+  font-weight: 500;
+  color: var(--primary-color);
+  text-decoration: none;
+}
+a:hover {
+  color: var(--primary-hover-color);
+  text-decoration: underline;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: rgba(255, 255, 255, 0.95);
+  margin-top: 0;
+  margin-bottom: 0.5rem; /* Default heading margin */
+  font-family: 'Poppins', sans-serif; /* Poppins for headings */
+}
