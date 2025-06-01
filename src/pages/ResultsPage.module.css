@@ -1,0 +1,77 @@
+/* Example additions to your CSS module (e.g., HomePage.module.css or a new ResultsPage.module.css) */
+
+.resultsPageContainer {
+  padding: 20px;
+  /* Add other base styles */
+}
+
+.backToSearchButton {
+  display: inline-block;
+  margin-bottom: 20px;
+  padding: 8px 15px;
+  background-color: #555;
+  color: white;
+  text-decoration: none;
+  border-radius: 4px;
+}
+.backToSearchButton:hover {
+  background-color: #777;
+}
+
+.resultsPageLayout {
+  display: flex;
+  flex-direction: row; /* Default for larger screens */
+  gap: 20px;
+}
+
+.mapSection {
+  flex: 1; /* Example: map takes up half the space */
+  min-width: 300px; /* Ensure map has some width */
+  /* height: 600px; /* Or set height on MapDisplay directly */
+}
+
+.detailsAndListSection {
+  flex: 1; /* Example: details/list take up other half */
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.listHeader {
+  margin-top: 20px;
+  margin-bottom: 10px;
+  font-size: 1.2em;
+  color: #eee;
+}
+
+.resultsListScrollable {
+  max-height: 400px; /* Example height */
+  overflow-y: auto;
+  padding-right: 10px; /* For scrollbar */
+  border: 1px solid #444;
+  border-radius: 5px;
+}
+
+.pageLoading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 60vh;
+  font-size: 1.2em;
+  color: #ccc;
+}
+
+
+/* Responsive adjustments for smaller screens */
+@media (max-width: 768px) {
+  .resultsPageLayout {
+    flex-direction: column;
+  }
+  .mapSection, .detailsAndListSection {
+    flex: none; /* Reset flex basis */
+    width: 100%;
+  }
+  .mapSection {
+    height: 350px; /* Adjust map height for mobile */
+  }
+}
