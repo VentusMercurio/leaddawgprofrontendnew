@@ -1,9 +1,9 @@
 // src/pages/RegisterPage.jsx
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import axios from 'axios';
-import { useAuth } from '../context/AuthContext'; // Your AuthContext
-import styles from './AuthPage.module.css'; // Assuming a shared CSS module for auth pages
+import axios from 'axios'; // Keep for direct API call
+import { useAuth } from '../context/AuthContext';
+import styles from './AuthPage.module.css';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5003';
 
@@ -17,7 +17,9 @@ function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
   
   const navigate = useNavigate();
-  const { login: contextLogin, setIsLoadingAuth } = useAuth(); // Get login function from context to log user in after register
+  // Get the 'register' function from AuthContext. 
+  // It will make the API call AND update the context state (currentUser).
+  const { register: contextRegister } = useAuth(); 
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -30,13 +32,11 @@ function RegisterPage() {
       setIsLoading(false);
       return;
     }
-
     if (password !== confirmPassword) {
       setError('Passwords do not match.');
       setIsLoading(false);
       return;
     }
-
     if (password.length < 8) {
       setError('Password must be at least 8 characters long.');
       setIsLoading(false);
@@ -44,101 +44,77 @@ function RegisterPage() {
     }
 
     try {
-      const response = await axios.post(
-        `${API_BASE_URL}/auth/register`, 
-        { username, email, password },
-        { withCredentials: true } // IMPORTANT for session cookies
-      );
+      // Call the register function from AuthContext
+      // This function will make the API call and update currentUser in context
+      const result = await contextRegister(username, email, password);
 
-      console.log("Registration response:", response.data);
+      console.log("Registration attempt result from context:", result);
 
-      if (response.data && response.data.user && response.status === 201) {
+      if (result.success && result.user) {
         setSuccessMessage('Registration successful! You are now logged in.');
-        // Call the login function from AuthContext to update global auth state
-        contextLogin(response.data.user);
+        // AuthContext's register function already called setCurrentUser.
+        // No need to call contextLogin here.
         
-        // Redirect after a short delay to let user see success message
         setTimeout(() => {
-          // if (setIsLoadingAuth) setIsLoadingAuth(true); // If contextLogin triggers a status re-fetch
-          navigate('/dashboard'); // Or wherever you want to redirect after registration
+          navigate('/dashboard'); 
         }, 1500); 
       } else {
-        // This case might be hit if backend returns 200 OK but not the expected user data
-        setError(response.data.message || 'Registration failed. Please try again.');
+        // Error message should come from result.message
+        setError(result.message || 'Registration failed. Please try again.');
       }
-    } catch (err) {
-      console.error("Registration API error:", err.response || err);
-      if (err.response && err.response.data && err.response.data.message) {
-        setError(err.response.data.message); // Display backend error (e.g., "Username already exists")
-      } else if (err.message === "Network Error") {
-        setError('Network error. Please check your connection or try again later.');
-      }
-      else {
-        setError('Registration failed. Please try again later.');
-      }
+    } catch (err) { 
+      // This catch block might be less likely to be hit if contextRegister handles its own errors well,
+      // but keep for safety for unexpected issues.
+      console.error("Unexpected error during registration process:", err);
+      setError('An unexpected error occurred during registration.');
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
+    // ... Your JSX for the registration form (this part was fine) ...
     <div className={styles.authPageContainer}>
       <div className={styles.authFormCard}>
         <h2 className={styles.authTitle}>Create Your LeadDawg Pro Account</h2>
         {error && <p className={styles.errorMessage}>{error}</p>}
-        {successMessage && <p className={styles.successMessage}>{successMessage}</p>} {/* Style this class */}
+        {successMessage && <p className={styles.successMessage}>{successMessage}</p>}
         
         <form onSubmit={handleSubmit} className={styles.authForm}>
+          {/* Username Input */}
           <div className={styles.formGroup}>
             <label htmlFor="username" className={styles.formLabel}>Username</label>
             <input
-              type="text"
-              id="username"
-              className={styles.formInput}
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              placeholder="Choose a username"
-              required
-              disabled={isLoading}
+              type="text" id="username" className={styles.formInput}
+              value={username} onChange={(e) => setUsername(e.target.value)}
+              placeholder="Choose a username" required disabled={isLoading}
             />
           </div>
+          {/* Email Input */}
           <div className={styles.formGroup}>
             <label htmlFor="email" className={styles.formLabel}>Email</label>
             <input
-              type="email"
-              id="email"
-              className={styles.formInput}
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
-              required
-              disabled={isLoading}
+              type="email" id="email" className={styles.formInput}
+              value={email} onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@example.com" required disabled={isLoading}
             />
           </div>
+          {/* Password Input */}
           <div className={styles.formGroup}>
             <label htmlFor="password" className={styles.formLabel}>Password</label>
             <input
-              type="password"
-              id="password"
-              className={styles.formInput}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Min. 8 characters"
-              required
-              disabled={isLoading}
+              type="password" id="password" className={styles.formInput}
+              value={password} onChange={(e) => setPassword(e.target.value)}
+              placeholder="Min. 8 characters" required disabled={isLoading}
             />
           </div>
+          {/* Confirm Password Input */}
           <div className={styles.formGroup}>
             <label htmlFor="confirmPassword" className={styles.formLabel}>Confirm Password</label>
             <input
-              type="password"
-              id="confirmPassword"
-              className={styles.formInput}
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="Re-enter password"
-              required
-              disabled={isLoading}
+              type="password" id="confirmPassword" className={styles.formInput}
+              value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}
+              placeholder="Re-enter password" required disabled={isLoading}
             />
           </div>
           <button type="submit" className={styles.authButton} disabled={isLoading}>

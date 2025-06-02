@@ -1,74 +1,92 @@
 // src/pages/LoginPage.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
-import axios from 'axios';
-import { useAuth } from '../context/AuthContext'; // Your AuthContext
-import styles from './AuthPage.module.css'; // Assuming a shared CSS module for auth pages
+// No direct axios import needed here if AuthContext handles the API call
+// import axios from 'axios'; 
+import { useAuth } from '../context/AuthContext';
+import styles from './AuthPage.module.css';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5003';
+// API_BASE_URL is now primarily used within AuthContext
+// const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5003';
+
+// Remove the temporary Axios interceptor if it was specific to debugging direct calls from this page
+// const loginApi = axios.create(); 
+// loginApi.interceptors.request.use(...)
 
 function LoginPage() {
-  const [email, setEmail] = useState(''); // Or username, depending on your backend
-  const [password, setPassword] = useState('');
+  const [emailInput, setEmailInput] = useState('');
+  const [passwordInput, setPasswordInput] = useState('');
   const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false); // This will be for the page's own loading state
   
   const navigate = useNavigate();
-  const location = useLocation(); // To get 'from' state for redirect after login
-  const { login: contextLogin, setIsLoadingAuth } = useAuth(); // Get login function from context
+  const location = useLocation(); 
+  // Get the login function and relevant states from AuthContext
+  const { login: contextLogin, isLoggedIn, currentUser, isLoadingAuth, isActionLoading } = useAuth();
 
-  const from = location.state?.from?.pathname || '/dashboard'; // Redirect to dashboard or previous page
+  const from = location.state?.from?.pathname || '/dashboard'; 
+
+  useEffect(() => {
+    if (!isLoadingAuth) { // Only act once initial auth check is complete
+      if (isLoggedIn && currentUser) {
+        console.log("LoginPage useEffect: User already logged in, redirecting.");
+        navigate(from, { replace: true });
+      } else {
+        console.log("LoginPage useEffect: User not logged in, ensuring form is clear.");
+        setEmailInput('');
+        setPasswordInput('');
+        setError(''); 
+      }
+    }
+  }, [isLoggedIn, currentUser, isLoadingAuth, navigate, from]);
+
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     setError('');
-    setIsLoading(true);
+    setIsLoading(true); // Indicate page is attempting login
 
-    if (!email || !password) {
+    const emailToSubmit = emailInput;
+    const passwordToSubmit = passwordInput;
+
+    if (!emailToSubmit || !passwordToSubmit) {
       setError('Please enter both email and password.');
       setIsLoading(false);
       return;
     }
+    
+    console.log("DEBUG [LoginPage]: ---- NEW LOGIN ATTEMPT ----");
+    console.log("DEBUG [LoginPage]: Email for context login:", emailToSubmit);
+    console.log("DEBUG [LoginPage]: Password for context login (length):", passwordToSubmit.length);
 
     try {
-      const response = await axios.post(
-        `${API_BASE_URL}/auth/login`, 
-        { email, password }, // Or { username: email, password } if backend uses username
-        { withCredentials: true } // ESSENTIAL for session cookies
-      );
+      // Call the login function from AuthContext
+      const result = await contextLogin(emailToSubmit, passwordToSubmit); 
 
-      console.log("Login response:", response.data);
+      console.log("Login attempt result from AuthContext in LoginPage:", result);
 
-      if (response.data && response.data.user) {
-        // Call the login function from AuthContext to update global auth state
-        // The contextLogin function should ideally set the user and isLoggedIn state
-        // and potentially fetch full user details again if needed (or trust response.data.user)
-        contextLogin(response.data.user); 
-
-        // Navigate to the intended page after successful login
-        // If login was successful, the backend set a cookie. 
-        // Subsequent calls (like to /auth/status by AuthContext) should now work.
-        // Consider briefly setting isLoadingAuth true if contextLogin refetches status
-        // if (setIsLoadingAuth) setIsLoadingAuth(true); 
+      if (result.success && result.user) {
+        // AuthContext's login function already called setCurrentUser.
+        // The context is now updated.
+        console.log("LoginPage: Login via context successful, navigating...");
         navigate(from, { replace: true });
       } else {
-        // Should not happen if backend sends user on success
-        setError(response.data.message || 'Login failed. Please try again.');
+        // Error message comes from the result object returned by contextLogin
+        setError(result.message || 'Login failed. Please try again.');
       }
-    } catch (err) {
-      console.error("Login API error:", err.response || err);
-      if (err.response && err.response.data && err.response.data.message) {
-        setError(err.response.data.message);
-      } else if (err.message === "Network Error") {
-        setError('Network error. Please check your connection or try again later.');
-      } 
-      else {
-        setError('Login failed. Please check your credentials or try again later.');
-      }
+    } catch (err) { 
+      // This catch block is for unexpected errors if contextLogin itself throws 
+      // something not caught internally and returned as { success: false, ... }
+      console.error("Unexpected error during LoginPage handleSubmit calling contextLogin:", err);
+      setError('An unexpected error occurred. Please try again.');
     } finally {
-      setIsLoading(false);
+      setIsLoading(false); // Login attempt finished
     }
   };
+
+  // If initial auth is still loading, you might want to show a page-level loader
+  // or disable the form, but App.jsx's AppContent already shows a global loader.
+  // So, we primarily use `isLoading` for the submit button.
 
   return (
     <div className={styles.authPageContainer}>
@@ -79,14 +97,15 @@ function LoginPage() {
           <div className={styles.formGroup}>
             <label htmlFor="email" className={styles.formLabel}>Email (or Username)</label>
             <input
-              type="email" // Change to "text" if using username primarily
+              type="email" 
               id="email"
               className={styles.formInput}
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              value={emailInput}
+              onChange={(e) => setEmailInput(e.target.value)}
               placeholder="you@example.com"
               required
-              disabled={isLoading}
+              disabled={isLoading || isActionLoading} // Disable if page is loading OR auth action is loading
+              autoComplete="username"
             />
           </div>
           <div className={styles.formGroup}>
@@ -95,21 +114,21 @@ function LoginPage() {
               type="password"
               id="password"
               className={styles.formInput}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              value={passwordInput}
+              onChange={(e) => setPasswordInput(e.target.value)}
               placeholder="••••••••"
               required
-              disabled={isLoading}
+              disabled={isLoading || isActionLoading} // Disable if page is loading OR auth action is loading
+              autoComplete="current-password"
             />
           </div>
-          <button type="submit" className={styles.authButton} disabled={isLoading}>
-            {isLoading ? 'Logging In...' : 'Login'}
+          <button type="submit" className={styles.authButton} disabled={isLoading || isActionLoading}>
+            {isLoading || isActionLoading ? 'Logging In...' : 'Login'} {/* Show loading based on either */}
           </button>
         </form>
         <p className={styles.authRedirectLink}>
           Don't have an account? <Link to="/register">Sign Up</Link>
         </p>
-        {/* Optional: Add "Forgot Password?" link here later */}
       </div>
     </div>
   );
