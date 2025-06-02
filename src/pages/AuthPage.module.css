@@ -1,0 +1,157 @@
+/* src/pages/AuthPage.module.css */
+
+/* Define some theme variables at the top for easy customization */
+:root {
+  --auth-bg-color: #18181b; /* Slightly different from main app bg, or same */
+  --auth-card-bg: #27272a;
+  --auth-text-color: #e4e4e7;
+  --auth-text-secondary: #a1a1aa;
+  --auth-border-color: #3f3f46;
+  --auth-input-bg: #1e1e21; /* Darker input background */
+  --auth-accent-color: #007bff; /* Example: Blue accent */
+  --auth-accent-hover: #0056b3;
+  --auth-error-color: #f87171;
+  --auth-error-bg: rgba(248, 113, 113, 0.1);
+  --auth-error-border: #ef4444;
+  --auth-success-color: #4ade80;
+  --auth-success-bg: rgba(74, 222, 128, 0.1);
+  --auth-success-border: #22c55e;
+}
+
+.authPageContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: calc(100vh - 70px); /* Adjust 70px based on your navbar height */
+  padding: 20px;
+  background-color: var(--auth-bg-color);
+  color: var(--auth-text-color);
+}
+
+.authFormCard {
+  background-color: var(--auth-card-bg);
+  padding: 35px 40px; /* Increased padding */
+  border-radius: 12px; /* Softer radius */
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3), 0 6px 10px rgba(0,0,0,0.2); /* More pronounced shadow */
+  width: 100%;
+  max-width: 420px;
+  text-align: center;
+  border: 1px solid var(--auth-border-color);
+}
+
+.authTitle {
+  color: var(--auth-text-color); /* Main text color for title */
+  margin-bottom: 30px;
+  font-size: 2rem; /* Larger title */
+  font-weight: 600;
+}
+
+.authForm {
+  display: flex;
+  flex-direction: column;
+  gap: 20px; /* Spacing between form groups */
+}
+
+.formGroup {
+  text-align: left;
+}
+
+.formLabel {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--auth-text-secondary);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.formInput {
+  width: 100%;
+  padding: 14px 18px; /* More padding */
+  border: 1px solid var(--auth-border-color);
+  border-radius: 8px; /* Consistent radius */
+  background-color: var(--auth-input-bg);
+  color: var(--auth-text-color);
+  font-size: 1rem;
+  box-sizing: border-box;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.formInput::placeholder {
+  color: #6b7280; /* Lighter placeholder */
+}
+
+.formInput:focus {
+  outline: none;
+  border-color: var(--auth-accent-color);
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2); /* Accent shadow on focus */
+}
+
+.authButton {
+  padding: 14px 20px;
+  font-size: 1.05rem;
+  font-weight: 600; /* Bolder button text */
+  /* Using your gradient from HomePage */
+  background-image: linear-gradient(to right, var(--auth-accent-color) 0%, #00c6ff 100%); 
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: opacity 0.2s ease, transform 0.1s ease;
+  margin-top: 10px; /* Space above button */
+}
+
+.authButton:hover:not(:disabled) {
+  opacity: 0.9;
+  transform: translateY(-1px); /* Slight lift on hover */
+}
+
+.authButton:active:not(:disabled) {
+  transform: translateY(0px); /* Press down effect */
+}
+
+.authButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-image: none; /* Remove gradient when disabled */
+  background-color: #4b5563; /* Muted disabled color */
+}
+
+.errorMessage {
+  color: var(--auth-error-color);
+  background-color: var(--auth-error-bg);
+  border: 1px solid var(--auth-error-border);
+  padding: 12px; /* More padding */
+  border-radius: 8px;
+  margin-bottom: 20px; /* Match form group gap */
+  font-size: 0.9rem;
+  text-align: left; /* Align text left for readability */
+}
+
+.successMessage {
+  color: var(--auth-success-color);
+  background-color: var(--auth-success-bg);
+  border: 1px solid var(--auth-success-border);
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-size: 0.9rem;
+  text-align: left;
+}
+
+.authRedirectLink {
+  margin-top: 25px;
+  font-size: 0.9rem;
+  color: var(--auth-text-secondary);
+}
+
+.authRedirectLink a {
+  color: var(--auth-accent-color);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.authRedirectLink a:hover {
+  text-decoration: underline;
+  color: var(--auth-accent-hover);
+}
