@@ -2,13 +2,13 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
-import styles from './DashboardPage.module.css'; // <<< ENSURE THIS IS THE ONLY IMPORT FOR 'styles'
-import { useNavigate, Link } from 'react-router-dom'; // Added Link
-import LeadDetailView from '../components/LeadDetailView'; 
+import styles from './DashboardPage.module.css';
+import { useNavigate, Link } from 'react-router-dom';
+import LeadDetailView from '../components/LeadDetailView'; // Your existing modal
 import GeneralPitchModal from '../components/GeneralPitchModal';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5003';
-const STATUS_OPTIONS = ["New", "Contacted", "Followed Up", "Interested", "Booked", "Not Interested", "Pending Review"];
+const STATUS_OPTIONS = ["New", "Contacted", "Followed Up", "Interested", "Booked", "Not Interested", "Pending Review"]; // Added Pending Review if it's a valid status
 
 function DashboardPage() {
   const { isLoggedIn, isLoadingAuth, currentUser } = useAuth();
@@ -20,17 +20,18 @@ function DashboardPage() {
   const [selectedLeadForDetail, setSelectedLeadForDetail] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [isGeneralPitchModalOpen, setIsGeneralPitchModalOpen] = useState(false);
+  const [isEnrichingLeadId, setIsEnrichingLeadId] = useState(null); // Track which lead is currently enriching
 
   const fetchSavedLeads = useCallback(async () => {
     setIsLoadingLeads(true); setError('');
     try {
       const response = await axios.get(`${API_BASE_URL}/api/leads`, { withCredentials: true });
-      if (response.data && response.data.leads) { 
+      if (response.data && Array.isArray(response.data.leads)) { // Check if leads is an array
         const sortedLeads = response.data.leads.sort((a, b) => new Date(b.saved_at) - new Date(a.saved_at));
         setSavedLeads(sortedLeads); 
       } else { 
         setSavedLeads([]); 
-        console.warn("Fetched leads but response.data.leads was not an array:", response.data);
+        console.warn("Fetched leads but response.data.leads was not an array or missing:", response.data);
       }
     } catch (err) {
       console.error("Error fetching saved leads:", err.response || err);
@@ -43,7 +44,7 @@ function DashboardPage() {
     } finally { 
       setIsLoadingLeads(false); 
     }
-  }, [isLoadingAuth, navigate]); // Added dependencies
+  }, [isLoadingAuth, navigate]); // Removed fetchSavedLeads from its own dependency array
 
   useEffect(() => {
     if (!isLoadingAuth) {
@@ -67,21 +68,23 @@ function DashboardPage() {
         { user_status: newStatus }, 
         { withCredentials: true }
       );
+      const updatedLeadFromServer = response.data.lead;
       setSavedLeads(prevLeads => 
         prevLeads.map(lead => 
-          lead.id === leadId ? { ...response.data.lead, _isUpdating: false } : lead 
+          lead.id === leadId ? { ...updatedLeadFromServer, _isUpdating: false } : lead 
         )
       );
       if (selectedLeadForDetail && selectedLeadForDetail.id === leadId) {
-        setSelectedLeadForDetail(prev => ({...prev, ...response.data.lead}));
+        setSelectedLeadForDetail(prev => ({...prev, ...updatedLeadFromServer}));
       }
     } catch (err) {
       console.error("Error updating lead status:", err.response || err);
       setError(err.response?.data?.message || `Failed to update status for lead ID ${leadId}.`);
-      setSavedLeads(originalLeads); 
+      setSavedLeads(originalLeads); // Revert on error
+      // Clear the _isUpdating flag after a delay or immediately on error
       setTimeout(() => {
         setSavedLeads(prev => prev.map(l => l.id === leadId ? {...l, _isUpdating: false} : l));
-      }, 500);
+      }, 100);
     }
   };
 
@@ -95,47 +98,71 @@ function DashboardPage() {
     setSelectedLeadForDetail(null); 
   };
 
-  const handleUpdateLeadDetails = async (leadId, updates) => { 
-    // setIsLoadingLeads(true); // Can use a more specific loading state for detail view updates
+  const handleUpdateLeadDetailsInModal = async (leadId, updates) => { 
+    // This is for saving notes/status from the modal
     try {
       const response = await axios.put(`${API_BASE_URL}/api/leads/${leadId}`, updates, { withCredentials: true });
       if (response.data && response.data.lead) {
         const updatedLeadFromServer = response.data.lead;
         setSavedLeads(prevLeads => prevLeads.map(l => l.id === leadId ? updatedLeadFromServer : l));
-        if (selectedLeadForDetail && selectedLeadForDetail.id === leadId) {
-          setSelectedLeadForDetail(updatedLeadFromServer);
-        }
-        // setIsLoadingLeads(false);
+        setSelectedLeadForDetail(updatedLeadFromServer); // Keep modal updated
         return true; 
       }
     } catch (err) {
       console.error("Error updating lead from detail view:", err.response || err);
       alert(err.response?.data?.message || "Failed to update lead details.");
     }
-    // setIsLoadingLeads(false);
     return false;
   };
 
-  const handleDeleteLead = async (leadId) => {
+  const handleDeleteLeadInModal = async (leadId) => {
     if (!window.confirm("Are you sure you want to delete this lead? This action cannot be undone.")) {
         return false;
     }
-    // setIsLoadingLeads(true); // More specific loading state
     try {
       await axios.delete(`${API_BASE_URL}/api/leads/${leadId}`, { withCredentials: true });
       setSavedLeads(prevLeads => prevLeads.filter(l => l.id !== leadId));
-      if (selectedLeadForDetail && selectedLeadForDetail.id === leadId) { // If deleted lead was open in detail view
-        handleCloseDetailView(); 
-      }
-      // setIsLoadingLeads(false);
+      handleCloseDetailView(); // Close modal as lead is deleted
       return true;
     } catch (err) {
       console.error("Error deleting lead:", err.response || err);
       alert(err.response?.data?.message || "Failed to delete lead.");
     }
-    // setIsLoadingLeads(false);
     return false;
   };
+
+  // --- NEW: Function to handle targeted enrichment ---
+  const handleEnrichLeadInDetailView = async (leadId) => {
+    if (!leadId) return false;
+    setIsEnrichingLeadId(leadId); // Set loading state for this specific enrichment
+    try {
+      console.log(`Dashboard: Enriching lead ID ${leadId}`);
+      const response = await axios.put(`${API_BASE_URL}/api/leads/${leadId}/enrich`, {}, { withCredentials: true });
+      if (response.data && response.data.lead) {
+        const enrichedLead = response.data.lead;
+        console.log("Dashboard: Enrichment successful, updated lead:", enrichedLead);
+        // Update the main list of leads
+        setSavedLeads(prevLeads => 
+          prevLeads.map(l => (l.id === leadId ? enrichedLead : l))
+        );
+        // If this lead is currently open in the detail view, update it there too
+        if (selectedLeadForDetail && selectedLeadForDetail.id === leadId) {
+          setSelectedLeadForDetail(enrichedLead);
+        }
+        alert("Lead details enriched successfully!");
+        return true;
+      } else {
+        alert(response.data.message || "Enrichment completed, but no new data was applied.");
+      }
+    } catch (err) {
+      console.error(`Error enriching lead ID ${leadId}:`, err.response || err);
+      alert(err.response?.data?.message || "Failed to enrich lead details.");
+    } finally {
+      setIsEnrichingLeadId(null);
+    }
+    return false;
+  };
+
 
   const filteredLeads = useMemo(() => {
     if (!searchTerm.trim()) return savedLeads;
@@ -151,8 +178,13 @@ function DashboardPage() {
   if (isLoadingAuth) { 
     return <div className={styles.loadingPage}>Loading user session...</div>;
   }
-  if (!isLoggedIn && !isLoadingAuth) { // Should be handled by navigate in useEffect, but as fallback
-      return <div className={styles.loadingPage}>Redirecting to login...</div>;
+  // Redirect if not logged in (this should ideally happen after isLoadingAuth is false)
+  if (!isLoggedIn && !isLoadingAuth) {
+      // The useEffect with navigate should handle this, but this is a safeguard render.
+      // It's better if useEffect handles navigation before this render.
+      // navigate('/login', { state: { message: "Please login to view your dashboard." }});
+      // return null; // Or a loading/redirecting message
+      return <div className={styles.loadingPage}>Redirecting to login... (Session not found)</div>;
   }
   
   return (
@@ -196,7 +228,7 @@ function DashboardPage() {
             <thead>
               <tr>
                 <th>Venue Name</th>
-                <th>Address (Start)</th>
+                <th>Address</th> {/* Changed from "Address (Start)" */}
                 <th>Saved On</th>
                 <th>Status</th>
                 <th>Actions</th> 
@@ -206,7 +238,8 @@ function DashboardPage() {
               {filteredLeads.map(lead => (
                 <tr key={lead.id} className={lead._isUpdating ? styles.isUpdatingRow : ''}>
                   <td onClick={() => handleOpenDetailView(lead)} className={styles.clickableCell}>{lead.name}</td>
-                  <td onClick={() => handleOpenDetailView(lead)} className={styles.clickableCell}>{lead.address ? lead.address.split(',')[0].trim() : 'N/A'}</td>
+                  {/* Display full address if available, otherwise N/A */}
+                  <td onClick={() => handleOpenDetailView(lead)} className={styles.clickableCell}>{lead.address || 'N/A'}</td>
                   <td onClick={() => handleOpenDetailView(lead)} className={styles.clickableCell}>{lead.saved_at ? new Date(lead.saved_at).toLocaleDateString() : 'N/A'}</td>
                   <td>
                     <select 
@@ -233,8 +266,10 @@ function DashboardPage() {
         <LeadDetailView
           lead={selectedLeadForDetail} 
           onClose={handleCloseDetailView}
-          onUpdateLead={handleUpdateLeadDetails} 
-          onDeleteLead={handleDeleteLead} 
+          onUpdateLead={handleUpdateLeadDetailsInModal} // Renamed for clarity
+          onDeleteLead={handleDeleteLeadInModal}    // Renamed for clarity
+          onEnrichLead={handleEnrichLeadInDetailView} // <-- PASS THE NEW ENRICH HANDLER
+          isEnriching={isEnrichingLeadId === selectedLeadForDetail.id} // Pass loading state for enrich button
           statusOptions={STATUS_OPTIONS} 
         />
       )}
