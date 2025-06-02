@@ -1,0 +1,257 @@
+/* src/pages/DashboardPage.module.css */
+
+/* Using similar theme variables for consistency, adjust as needed */
+:root {
+  --dash-bg-color: #18181b;
+  --dash-surface-bg: #27272a; /* For table container, modals */
+  --dash-text-color: #e4e4e7;
+  --dash-text-muted: #a1a1aa;
+  --dash-border-color: #3f3f46;
+  --dash-input-bg: #1e1e21;
+  --dash-primary-accent: #007bff; /* Link/action color */
+  --dash-primary-hover: #0056b3;
+  --dash-accent-color: #10b981; /* For a different accent like 'Save Pitch' button */
+  --dash-accent-hover: #059669;
+  --dash-danger-color: #ef4444;
+}
+
+.loadingPage {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: calc(100vh - 70px); /* Assuming navbar height */
+  font-size: 1.5rem;
+  color: var(--dash-text-muted);
+}
+
+.dashboardContainer {
+  max-width: 1200px;
+  margin: 30px auto;
+  padding: 20px 30px; /* More horizontal padding */
+  color: var(--dash-text-color);
+  font-family: 'Inter', sans-serif; /* A clean sans-serif font */
+}
+
+.dashboardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 35px;
+  padding-bottom: 25px;
+  border-bottom: 1px solid var(--dash-border-color);
+}
+
+.dashboardHeader > div { /* Wrapper for title and subtitle */
+  flex-grow: 1;
+}
+
+.dashboardHeader h1 {
+  font-size: 2.4rem; /* Slightly larger */
+  font-weight: 700;
+  margin-bottom: 6px;
+  color: var(--dash-text-color);
+  letter-spacing: -0.5px;
+}
+
+.dashboardHeader p {
+  font-size: 1rem;
+  color: var(--dash-text-muted);
+}
+
+.generalPitchButton {
+  background-color: var(--dash-accent-color);
+  color: white;
+  border: none;
+  padding: 12px 20px; /* Slightly larger padding */
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+.generalPitchButton:hover {
+  background-color: var(--dash-accent-hover);
+  transform: translateY(-1px);
+}
+
+.filterControls {
+  margin-bottom: 25px;
+}
+
+.searchInputDashboard {
+  width: 100%;
+  max-width: 550px; /* Control max width */
+  padding: 12px 18px;
+  font-size: 1rem;
+  border: 1px solid var(--dash-border-color);
+  border-radius: 8px;
+  background-color: var(--dash-input-bg);
+  color: var(--dash-text-color);
+}
+.searchInputDashboard::placeholder {
+  color: #6b7280;
+}
+.searchInputDashboard:focus {
+  outline: none;
+  border-color: var(--dash-primary-accent);
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.2);
+}
+
+.loadingMessage, 
+.noLeadsMessage {
+  text-align: center;
+  font-size: 1.1rem;
+  color: var(--dash-text-muted);
+  padding: 60px 20px;
+  background-color: var(--dash-surface-bg);
+  border-radius: 8px;
+  border: 1px solid var(--dash-border-color);
+  margin-top: 20px;
+}
+.noLeadsMessage a {
+    color: var(--dash-primary-accent);
+    font-weight: 500;
+    text-decoration: none;
+}
+.noLeadsMessage a:hover {
+    text-decoration: underline;
+}
+
+
+.errorMessage {
+  background-color: rgba(239, 68, 68, 0.1); /* Tailwind red-500 opacity 10% */
+  color: #f87171; /* Tailwind red-400 */
+  border: 1px solid var(--dash-danger-color);
+  padding: 15px;
+  border-radius: 8px;
+  margin: 20px 0;
+  text-align: center;
+}
+
+.leadsTableContainer {
+  background-color: var(--dash-surface-bg);
+  border-radius: 12px; /* Softer radius for the container */
+  padding: 5px 25px 25px 25px; /* More padding inside */
+  box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+  border: 1px solid var(--dash-border-color);
+  overflow-x: auto; /* Allow horizontal scroll for table on small screens */
+}
+
+.leadsTable {
+  width: 100%;
+  border-collapse: separate; /* Use separate for spacing with border-radius */
+  border-spacing: 0; /* Remove default spacing */
+  margin-top: 15px;
+}
+
+.leadsTable th, 
+.leadsTable td {
+  padding: 14px 18px; /* Increased padding */
+  text-align: left;
+  border-bottom: 1px solid var(--dash-border-color);
+  vertical-align: middle; /* Align content vertically */
+}
+
+.leadsTable th {
+  font-weight: 600;
+  font-size: 0.85rem; /* Slightly smaller header text */
+  text-transform: uppercase;
+  color: var(--dash-text-muted);
+  background-color: rgba(45, 45, 49, 0.5); /* Slightly darker header bg */
+  letter-spacing: 0.5px;
+}
+.leadsTable thead th:first-child {
+    border-top-left-radius: 8px; /* Rounded corners for table header */
+}
+.leadsTable thead th:last-child {
+    border-top-right-radius: 8px;
+}
+
+
+.leadsTable tr:last-child td {
+  border-bottom: none;
+}
+
+.leadsTable tbody tr:hover td { 
+  background-color: rgba(55, 55, 61, 0.5); /* Darker, more noticeable hover */
+}
+
+.clickableCell { /* For cells that trigger detail view */
+  cursor: pointer;
+  color: var(--dash-text-color); /* Default text color */
+}
+.clickableCell:hover {
+  color: var(--dash-primary-accent); /* Highlight on hover */
+  /* text-decoration: underline; /* Optional underline on hover */
+}
+/* Specifically style the name cell if desired */
+.leadsTable td:first-child.clickableCell { 
+    font-weight: 500; /* Make names slightly bolder */
+}
+
+
+.statusSelect {
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--auth-border-color); /* Match input border */
+  background-color: var(--auth-input-bg); /* Match input background */
+  color: var(--dash-text-color);
+  font-size: 0.9rem;
+  min-width: 160px;
+  cursor: pointer;
+}
+.statusSelect:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background-color: #333; /* Darker disabled background */
+}
+
+.actionButton {
+  padding: 7px 14px;
+  font-size: 0.875rem;
+  border-radius: 6px;
+  cursor: pointer;
+  background-color: var(--dash-primary-accent);
+  color: white;
+  border: none;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  font-weight: 500;
+}
+.actionButton:hover:not(:disabled) {
+  background-color: var(--dash-primary-hover);
+  transform: translateY(-1px);
+}
+.actionButton:active:not(:disabled) {
+  transform: translateY(0px);
+}
+.actionButton:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+
+.isUpdatingRow td {
+  opacity: 0.5;
+  pointer-events: none;
+  background-color: rgba(75, 75, 81, 0.3) !important; /* Override hover during update */
+}
+
+/* Pagination Controls (if you add them to dashboard) */
+.resultsPaginationControls {
+  margin-top: 25px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+.resultsPaginationControls span {
+  font-size: 0.9rem;
+  color: var(--dash-text-muted);
+}
+.pageButton { /* Re-using styles from HomePage or define new ones */
+  padding: 8px 15px;
+  /* ... other styles ... */
+}

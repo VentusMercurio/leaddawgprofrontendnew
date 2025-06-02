@@ -1,0 +1,234 @@
+/* src/components/GeneralPitchModal.module.css */
+
+/* Re-use or adapt modal styles from LeadDetailView.module.css or a common modal CSS */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000; /* Ensure it's on top */
+}
+
+.modalContent { /* Base modal content styling */
+  background-color: #2d2d30; /* Dark surface */
+  padding: 25px 30px;
+  border-radius: 10px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.4);
+  width: 90%;
+  max-width: 700px; /* Adjust as needed for pitch template */
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  position: relative; /* For absolute positioning of close button */
+  color: #f0f0f0;
+}
+
+.generalPitchModalContent { /* Specific styles for this modal if needed */
+  /* e.g., specific width or height adjustments */
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #444;
+}
+
+.modalHeader h3 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.closeButtonTopRight {
+  background: none;
+  border: none;
+  color: #aaa;
+  font-size: 2rem;
+  font-weight: 300;
+  line-height: 1;
+  padding: 0 5px;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+.closeButtonTopRight:hover {
+  color: #fff;
+}
+
+.modalBody {
+  flex-grow: 1;
+  overflow-y: auto; /* Scroll if content is too long */
+  padding-right: 10px; /* Space for scrollbar */
+}
+
+.templateInfo {
+  font-size: 0.9rem;
+  color: #ccc;
+  margin-bottom: 15px;
+}
+.templateInfo strong {
+  color: #e0e0e0;
+  font-weight: 600;
+}
+
+.pitchTextarea {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 6px;
+  border: 1px solid #444;
+  background-color: #1e1e21;
+  color: #f0f0f0;
+  font-family: monospace; /* Good for templates */
+  font-size: 0.95rem;
+  line-height: 1.5;
+  resize: vertical; /* Allow vertical resize */
+  min-height: 200px; /* Decent starting height */
+  box-sizing: border-box;
+}
+.pitchTextarea:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.2);
+}
+
+.modalFooter {
+  display: flex;
+  justify-content: space-between; /* Align items to ends */
+  align-items: center;
+  padding-top: 20px;
+  margin-top: 20px;
+  border-top: 1px solid #444;
+}
+
+.generalPitchFooter > div { /* Wrapper for right-aligned buttons */
+    display: flex;
+    gap: 10px;
+}
+
+.modalButton {
+  padding: 10px 18px;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease, opacity 0.2s ease;
+}
+
+.resetButton {
+  background-color: #555;
+  color: #f0f0f0;
+}
+.resetButton:hover {
+  background-color: #666;
+}
+
+.saveTemplateButton {
+  background-color: #28a745; /* Green */
+  color: white;
+}
+.saveTemplateButton:hover {
+  background-color: #218838;
+}
+
+.copyPitchButtonMain {
+  background-color: #007bff; /* Blue */
+  color: white;
+}
+.copyPitchButtonMain:hover {
+  background-color: #0056b3;
+}
+.copyPitchButtonMain:disabled {
+    opacity: 0.7;
+}
+
+.generalPitchModalContent {
+  /* max-width: 750px; /* Potentially wider for text area */
+  /* min-height: 500px; Ensure enough height */
+}
+
+.templateInfo {
+  font-size: 0.85rem;
+  color: #b0b0b0; /* Lighter text for info */
+  margin-bottom: 10px;
+  line-height: 1.4;
+}
+.templateInfo strong {
+  color: #d0d0d0;
+  font-weight: 500;
+}
+
+.pitchTextarea {
+  width: 100%;
+  padding: 12px;
+  border-radius: 6px;
+  border: 1px solid #4a4a4f; /* Slightly different border */
+  background-color: #1c1c1e; /* Darker background for textarea */
+  color: #e0e0e0;
+  font-family: 'Menlo', 'Monaco', 'Consolas', monospace; /* Monospace for template editing */
+  font-size: 0.9rem;
+  line-height: 1.6;
+  resize: vertical;
+  min-height: 250px; /* Good default height */
+  box-sizing: border-box;
+  margin-bottom: 10px; /* Space before saved message */
+}
+.pitchTextarea:focus {
+  outline: none;
+  border-color: #007bff; /* Your accent color */
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.2);
+}
+
+.savedMessageIndicator {
+    font-size: 0.85rem;
+    color: #4ade80; /* Success green */
+    text-align: center; /* Or align with buttons */
+    margin-top: 5px;
+    height: 20px; /* Reserve space to prevent layout shift */
+}
+
+
+.generalPitchFooter {
+  /* Uses .modalFooter for base flex display: flex; justify-content: space-between; */
+}
+
+.actionsGroupRight { /* For grouping save and copy buttons */
+    display: flex;
+    gap: 10px;
+}
+
+.resetButton {
+  background-color: #6c757d; /* Grayish */
+  color: white;
+}
+.resetButton:hover {
+  background-color: #5a6268;
+}
+
+.saveTemplateButton {
+  background-color: #28a745; /* Green */
+  color: white;
+}
+.saveTemplateButton:hover {
+  background-color: #218838;
+}
+
+.copyPitchButtonMain {
+  background-color: #007bff; /* Blue */
+  color: white;
+}
+.copyPitchButtonMain:hover:not(:disabled) {
+  background-color: #0056b3;
+}
+.copyPitchButtonMain:disabled {
+    background-color: #004793; /* Slightly darker when "Copied" */
+    opacity: 0.8;
+    cursor: default;
+}
