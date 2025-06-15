@@ -93,7 +93,7 @@ function HomePage() {
       return;
     }
     
-    const defaultEnrich = (isProUser).toString(); 
+    const defaultEnrich = 'false'; 
 
     // Navigate to results page with search parameters
     navigate(`/search-results?query=${encodeURIComponent(parsedSearchTerm)}&location=${encodeURIComponent(parsedLocationTerm)}&enrich=${defaultEnrich}`);

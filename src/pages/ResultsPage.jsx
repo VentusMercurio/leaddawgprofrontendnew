@@ -8,7 +8,7 @@ import MapDisplay from '../components/MapDisplay';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5003';
 const RESULTS_PER_VIEW = 6; 
-const NON_PRO_VISIBLE_LIMIT = 5;
+// const NON_PRO_VISIBLE_LIMIT = 10; // REMOVED: This limit is no longer needed
 
 const getInitials = (name, isLarge = false) => {
   if (!name) return isLarge ? "N/A" : "NA";
@@ -123,8 +123,9 @@ function ResultsPage() {
   const locationTermParam = queryParams.get('location'); // Use a different name from hook
   const enrichGoogleParam = queryParams.get('enrich') === 'true';
 
-  const isProUser = isLoggedIn && currentUser && currentUser.tier === 'pro';
-  
+  // const isProUser = isLoggedIn && currentUser && currentUser.tier === 'pro'; // We are removing the concept of 'pro' user for feature access
+  const isProUser = true; // Assume all users are "pro" for feature access purposes on this page
+
   useEffect(() => {
     if (!locationTermParam) {
       setSearchError("Location parameter is missing for search.");
@@ -143,8 +144,11 @@ function ResultsPage() {
         const params = { 
           query: queryTerm, 
           location: locationTermParam,
-          enrich_google: (isProUser && enrichGoogleParam).toString(),
-          limit: isProUser ? 100 : 30 
+          // Always send enrich_google as requested by the URL param, regardless of 'pro' status
+          // The backend's default limit for Google enrichment is 5, which aligns with your desired cost control.
+          enrich_google: enrichGoogleParam.toString(), 
+          // Set a high limit for results as we want to show all. The backend itself might have limits.
+          limit: 100 // Fetch up to 100 results from the backend. Adjust this if you expect more or less.
         };
         console.log("DEBUG [ResultsPage]: Fetching data with params:", params);
         const response = await axios.get(`${API_BASE_URL}/api/search/osm-places`, { params });
@@ -170,7 +174,9 @@ function ResultsPage() {
     };
 
     fetchData();
-  }, [queryTerm, locationTermParam, enrichGoogleParam, isProUser]);
+  }, [queryTerm, locationTermParam, enrichGoogleParam, 
+    // isProUser // Removed from dependencies as it's now hardcoded true
+  ]);
 
   const fetchUserSavedLeadIds = useCallback(async () => {
      if (isLoggedIn && currentUser) {
@@ -219,7 +225,7 @@ function ResultsPage() {
       business_status: placeToSave.business_status,
       rating: placeToSave.rating,
       user_ratings_total: placeToSave.user_ratings_total,
-      google_maps_url: placeToSave.google_maps_url,
+      Maps_url: placeToSave.Maps_url,
       opening_hours: placeToSave.opening_hours, // Send as is (array or string)
       price_level: placeToSave.price_level,
     };
@@ -252,12 +258,16 @@ function ResultsPage() {
   const handleSelectLeadFromList = (place) => { setFeaturedLead(place); };
   const handleMapMarkerClick = (place) => { setFeaturedLead(place); };
 
-  const resultsToList = isProUser ? allSearchResults : allSearchResults.slice(0, NON_PRO_VISIBLE_LIMIT);
+  // MODIFIED: Always show all results; pagination applies to all.
+  // const resultsToList = isProUser ? allSearchResults : allSearchResults.slice(0, NON_PRO_VISIBLE_LIMIT); // Original Line
+  const resultsToList = allSearchResults; // Now all users see all results
+
   const listForCurrentPage = resultsToList.slice(
     (currentResultsPage - 1) * RESULTS_PER_VIEW,
     currentResultsPage * RESULTS_PER_VIEW
   );
-  const totalListPagesForPro = Math.ceil(resultsToList.length / RESULTS_PER_VIEW);
+  // Pagination now applies to the full list, not just a "pro" subset
+  const totalListPages = Math.ceil(resultsToList.length / RESULTS_PER_VIEW); // Renamed from totalListPagesForPro
 
   if (isLoadingAuth) return <div className={styles.pageLoading}>Initializing authentication...</div>;
   if (isLoading) return <div className={styles.pageLoading}>Loading results for "{queryTerm}" in "{locationTermParam}"...</div>;
@@ -316,19 +326,21 @@ function ResultsPage() {
             {listForCurrentPage.length === 0 && !featuredLead && <p>No other leads in this view.</p>}
           </div>
 
-          {isProUser && resultsToList.length > RESULTS_PER_VIEW && totalListPagesForPro > 1 && (
+          {/* MODIFIED: Pagination always visible if needed, no longer tied to isProUser */}
+          {resultsToList.length > RESULTS_PER_VIEW && totalListPages > 1 && (
             <div className={styles.resultsPaginationControls}>
               <button onClick={() => setCurrentResultsPage(p => Math.max(1, p - 1))} disabled={currentResultsPage === 1}>« Prev</button>
-              <span>Page {currentResultsPage} of {totalListPagesForPro}</span>
-              <button onClick={() => setCurrentResultsPage(p => Math.min(totalListPagesForPro, p + 1))} disabled={currentResultsPage === totalListPagesForPro}>Next »</button>
+              <span>Page {currentResultsPage} of {totalListPages}</span>
+              <button onClick={() => setCurrentResultsPage(p => Math.min(totalListPages, p + 1))} disabled={currentResultsPage === totalListPages}>Next »</button>
             </div>
           )}
 
-          {!isProUser && allSearchResults.length > NON_PRO_VISIBLE_LIMIT && (
+          {/* REMOVED: The "Go Pro" paywall teaser */}
+          {/* {!isProUser && allSearchResults.length > NON_PRO_VISIBLE_LIMIT && (
             <div className={styles.proTeaser}>
               <p>Showing {NON_PRO_VISIBLE_LIMIT} of {allSearchResults.length} potential leads. <Link to="/pricing" className={styles.proButton}>Go Pro for all results!</Link></p>
             </div>
-          )}
+          )} */}
         </div>
       </div>
     </div>
